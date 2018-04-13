@@ -1,6 +1,6 @@
 import math
 
-import util
+import sutil
 import smath
 
 type

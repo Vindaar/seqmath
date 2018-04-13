@@ -11,13 +11,13 @@
 ##  The results produced will differ from the
 ##  results produced by a library like numpy.
 
-import seqmath/util
+import seqmath/sutil
 import seqmath/smath
 import seqmath/finance
 
 import math
 export math
 
-export util
+export sutil
 export smath
 export finance
