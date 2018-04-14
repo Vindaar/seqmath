@@ -102,24 +102,33 @@ proc flatten*[T: seq](a: seq[T]): auto =
   ##   -> @[1, 2, 3, 4, 5, 6]
   a.concat.flatten
 
+  
 proc shape*[T: (SomeNumber | bool | char | string)](x: T): seq[int] = @[]
   ## Exists so that recursive proc stops with this proc.
 
-proc shape*[T](x: openArray[T]): seq[int] =
-  ## recursively determine the dimension of a nested sequence.
-  ## we simply append the dimension of the current seq to the
-  ## result and call this function again recursively until
-  ## we hit the type at core, which is catched by the above proc
-  ##
-  ## Example:
-  ##    let x = @[ @[ @[1, 2, 3], @[1, 2, 3]],
-  ##               @[ @[1, 2, 3], @[1, 2, 3]] ]
-  ##    echo x.shape
-  ##    -> @[2, 2, 3]
-  result = @[]
-  if len(x) > 0:
-    result.add(len(x))
-    result.add(shape(x[0]))
+when canImport(arraymancer):
+  # in case arraymancer is installed, shape can be ambiguous with arraymancer.nested_containers.nim
+  proc shape*[T](x: seq[T]): seq[int] =
+    result = @[]
+    if len(x) > 0:
+      result.add(len(x))
+      result.add(shape(x[0]))
+else:
+  proc shape*[T](x: openArray[T]): seq[int] =
+    ## recursively determine the dimension of a nested sequence.
+    ## we simply append the dimension of the current seq to the
+    ## result and call this function again recursively until
+    ## we hit the type at core, which is catched by the above proc
+    ##
+    ## Example:
+    ##    let x = @[ @[ @[1, 2, 3], @[1, 2, 3]],
+    ##               @[ @[1, 2, 3], @[1, 2, 3]] ]
+    ##    echo x.shape
+    ##    -> @[2, 2, 3]
+    result = @[]
+    if len(x) > 0:
+      result.add(len(x))
+      result.add(shape(x[0]))
 
 template getIndexSeq(ind: int, shape: openArray[int]): seq[int] =
   ## given an index for a 1D array (flattened from nD), calculate back
