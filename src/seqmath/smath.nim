@@ -827,7 +827,7 @@ proc logLikelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float 
   ## and checks for valid values.
   ## Returns NegInf for cases in which likelihood returns 0 (bin content of bin is 0)
   let lhood = likelihood(hist, val, bin_edges)
-  if lhood == 0:
+  if lhood <= 0:
     result = NegInf
   else:
     result = ln(lhood)
