@@ -819,7 +819,11 @@ proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   # get indices from bin edges using lower bound (in sorted seq simply looks for
   # potential insertion order of element. Given bin_edges that's precisely the index)
   let ind = bin_edges.lowerBound(val).int
-  result = hist[ind].float / hist.sum.float
+  if ind < hist.len:
+    # in case ind is == hist.len, the value is larger than the bounds. Drop it.
+    result = hist[ind].float / hist.sum.float
+  else:
+    result = 0
 
 proc logLikelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   ## calculates the logLikelihood for the value `val` given hypothesis `hist` 
