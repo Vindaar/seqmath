@@ -783,7 +783,7 @@ proc histogram*[T](x: openArray[T],
     when T isnot float:
       var x_data = mapIt(@x, it.float)
     else:
-      var x_data = x
+      var x_data = @x
     var x_keep = filterIt(x_data, it >= mn and it <= mx)
     x_data = x_keep
     # remove potential offset
