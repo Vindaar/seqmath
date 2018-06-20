@@ -271,7 +271,7 @@ proc max*[T](x, y: seq[T]): seq[T] =
   ## Note: previous definition using an openArray as the type
   ## does not work anymore, since it clashes with with
   ## system.max[T](x, y: T) now
-  
+
   ## Maximum value of each element of ``x`` and
   ## ``y`` respectively, as a sequence.
   ##
@@ -285,7 +285,7 @@ proc max*[T](x, y: seq[T]): seq[T] =
       if i < nlen: result[i] = max(x[i], y[i])
       elif i < x.len: result[i] = x[i]
       else: result[i] = y[i]
-      
+
 proc min*[T](x: openArray[T], m: T): seq[T] =
   ## Minimum of each element of ``x`` compared to the value ``m``
   ## as a sequence
@@ -301,7 +301,7 @@ proc min*[T](x, y: seq[T]): seq[T] =
   ## Note: previous definition using an openArray as the type
   ## does not work anymore, since it clashes with with
   ## system.min[T](x, y: T) now
-  
+
   ## Minimum value of each element of ``x`` and
   ## ``y`` respectively, as a sequence.
   ##
@@ -826,7 +826,7 @@ proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
     result = 0
 
 proc logLikelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
-  ## calculates the logLikelihood for the value `val` given hypothesis `hist` 
+  ## calculates the logLikelihood for the value `val` given hypothesis `hist`
   ## assuming a binning `bin_edges`. Uses above `likelihood` proc, takes the log
   ## and checks for valid values.
   ## Returns NegInf for cases in which likelihood returns 0 (bin content of bin is 0)
@@ -835,7 +835,7 @@ proc logLikelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float 
     result = NegInf
   else:
     result = ln(lhood)
-  
+
 proc unwrap*[T](p: openArray[T], discont = PI): seq[float] =
   ## unwrap radian values of ``p`` by changing deltas between
   ## consecutive elements to its ``2*pi`` complement
@@ -981,5 +981,29 @@ proc gauss*[T](x, mean, sigma: T , norm = false): float =
 proc gauss*[T](x: openArray[T], mean, sigma: T, norm = false): seq[float] =
   ## version of gauss working on openArrays
   result = newSeq[float](x.len)
-  for i in 0..x.high:
+  for i in 0 .. x.high:
     result[i] = gauss(x[i], mean, sigma, norm)
+
+proc normalCdf*(x, sigma, x0: float): float =
+  let z = (x - x0) / (sigma * sqrt(2.0))
+  if z < -1.0:
+    result = 0.5 * erfc(-z)
+  else:
+    result = 0.5 * (1.0 * erf(z))
+
+proc normalCdfC*(x, sigma, x0: float): float =
+  let z = (x - x0) / (sigma * sqrt(2.0))
+  if z > 1.0:
+    result = 0.5 * erfc(z)
+  else:
+    result = 0.5 * (1.0 - erf(z))
+
+proc normalCdf*(x: openArray[T], sigma, x0: float): seq[float] =
+  result = newSeq[float](x.len)
+  for i in 0 .. x.high:
+    result[i] = normalCdf(x[i], sigma, x0)
+
+proc normalCdfC*(x: openArray[T], sigma, x0: float): seq[float] =
+  result = newSeq[float](x.len)
+  for i in 0 .. x.high:
+    result[i] = normalCdfC(x[i], sigma, x0)
