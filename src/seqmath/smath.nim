@@ -998,12 +998,12 @@ proc normalCdfC*(x, sigma, x0: float): float =
   else:
     result = 0.5 * (1.0 - erf(z))
 
-proc normalCdf*(x: openArray[T], sigma, x0: float): seq[float] =
+proc normalCdf*[T](x: openArray[T], sigma, x0: float): seq[float] =
   result = newSeq[float](x.len)
   for i in 0 .. x.high:
     result[i] = normalCdf(x[i], sigma, x0)
 
-proc normalCdfC*(x: openArray[T], sigma, x0: float): seq[float] =
+proc normalCdfC*[T](x: openArray[T], sigma, x0: float): seq[float] =
   result = newSeq[float](x.len)
   for i in 0 .. x.high:
     result[i] = normalCdfC(x[i], sigma, x0)
