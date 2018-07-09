@@ -1,5 +1,15 @@
 import sequtils
 
+type
+  # 
+  SplitSeq* {.pure.} = enum
+    Seq2Col = 2
+    Seq3Col = 3
+    Seq4Col = 4
+    Seq5Col = 5
+    Seq6Col = 6
+    Seq7Col = 7
+
 # ----------- convenience procs -------------------------
 
 template canImport(x): bool =
@@ -194,3 +204,58 @@ template reshape*[T](s: seq[T], shape: array[2, int]): seq[seq[T]] =
 template reshape*[T](s: seq[T], shape: array[3, int]): seq[seq[seq[T]]] =
   ## convenience template around reshape3D using 3 element array as input
   s.reshape3D(shape)
+
+proc transpose*[T](s: seq[T]): seq[T] =
+  ## given a nested sequence, transposes the nested levels, 
+  ##
+  ## Example:
+  ## .. code-block::
+  ##   let s = newSeq[float](200).reshape([100, 2])
+  ##   let t = s.transpose
+  ##   echo s.shape     # @[100, 2]
+  ##   echo t.shape     # @[2, 100]
+  assert s.shape.len == 2, "Needs to be a nested sequence of 2D"
+  # defined if the above holds
+  type TT = type(s[0][0])
+  let nCols = s.shape[0]
+  let nRows = s.shape[1]
+  result = newSeqWith(nRows, newSeq[TT](nCols))    
+  for i in 0 ..< nCols:
+    for j in 0 ..< nRows:
+      result[j][i] = s[i][j]
+  
+template split*[T](s: seq[T], num: SplitSeq): untyped =
+  ## splits the given nested sequence into a tuple of 1D sequences, e.g. given
+  ## Sort of the inverse of `zip` except not working on seqs of tuples, but
+  ## nested seqs.
+  ## `SplitSeq` is a pure enum to choose the return type at compile time.
+  ## Needs to be the same as 
+  ## 
+  ## Example:
+  ## .. code-block::
+  ##   let s = newSeq[float](200).reshape([100, 2])
+  ##   let (s1, s2) = s.split(Seq2D)
+  ##   echo s.shape     # @[100, 2]
+  ##   echo s1.shape    # @[100], column 0
+  ##   echo s2.shape    # @[100], column 1
+  assert s.shape.len == 2, "Needs to be a nested sequence of 2D"
+  assert s.shape[1] == num.int, "num needs to be the same as the 2nd dim of s. " &
+    "num = " & $num & ", s.shape == " & $(s.shape[1])
+  type TT = type(s[0][0])
+  let tmp = transpose(s)
+  when num == SplitSeq.Seq2Col:
+    (tmp[0], tmp[1])
+  elif num == SplitSeq.Seq3Col:
+    (tmp[0], tmp[1], tmp[2])
+  elif num == SplitSeq.Seq4Col:
+    (tmp[0], tmp[1], tmp[2], tmp[3])
+  elif num == SplitSeq.Seq5Col:
+    (tmp[0], tmp[1], tmp[2], tmp[3], tmp[4])
+  elif num == SplitSeq.Seq6Col:
+    (tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5])
+  elif num == SplitSeq.Seq7Col:
+    (tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6])
+  else:
+    assert false, "Not implemented for more than 7 columns! Shape is ", s.shape
+
+  
