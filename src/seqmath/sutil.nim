@@ -181,7 +181,9 @@ proc newSeqOf3D*[T](shape: openArray[int]): seq[seq[seq[T]]] =
 
 proc reshape2D*[T](s: seq[T], shape: openArray[int]): seq[seq[T]] =
   ## returns a reshaped version of `s` to the given shape of `shape`
-  assert s.len == foldl(@shape, a * b)
+  assert s.len == foldl(@shape, a * b),
+     &"Total number of elements must not change! " &
+     &"input = {s.len}, output = {foldl(@shape, a * b)}"
   result = newSeqOf2D[T](shape)
   for i, el in s:
     # TODO: replace by running indices mimicking the calculation that
