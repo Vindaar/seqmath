@@ -1,7 +1,7 @@
-import sequtils
+import sequtils, strformat
 
 type
-  # 
+  #
   SplitSeq* {.pure.} = enum
     Seq2Col = 2
     Seq3Col = 3
@@ -112,7 +112,7 @@ proc flatten*[T: seq](a: seq[T]): auto =
   ##   -> @[1, 2, 3, 4, 5, 6]
   a.concat.flatten
 
-  
+
 proc shape*[T: (SomeNumber | bool | char | string)](x: T): seq[int] = @[]
   ## Exists so that recursive proc stops with this proc.
 
@@ -208,7 +208,7 @@ template reshape*[T](s: seq[T], shape: array[3, int]): seq[seq[seq[T]]] =
   s.reshape3D(shape)
 
 proc transpose*[T](s: seq[T]): seq[T] =
-  ## given a nested sequence, transposes the nested levels, 
+  ## given a nested sequence, transposes the nested levels,
   ##
   ## Example:
   ## .. code-block::
@@ -221,18 +221,18 @@ proc transpose*[T](s: seq[T]): seq[T] =
   type TT = type(s[0][0])
   let nCols = s.shape[0]
   let nRows = s.shape[1]
-  result = newSeqWith(nRows, newSeq[TT](nCols))    
+  result = newSeqWith(nRows, newSeq[TT](nCols))
   for i in 0 ..< nCols:
     for j in 0 ..< nRows:
       result[j][i] = s[i][j]
-  
+
 template split*[T](s: seq[T], num: SplitSeq): untyped =
   ## splits the given nested sequence into a tuple of 1D sequences, e.g. given
   ## Sort of the inverse of `zip` except not working on seqs of tuples, but
   ## nested seqs.
   ## `SplitSeq` is a pure enum to choose the return type at compile time.
-  ## Needs to be the same as 
-  ## 
+  ## Needs to be the same as
+  ##
   ## Example:
   ## .. code-block::
   ##   let s = newSeq[float](200).reshape([100, 2])
@@ -259,5 +259,3 @@ template split*[T](s: seq[T], num: SplitSeq): untyped =
     (tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6])
   else:
     assert false, "Not implemented for more than 7 columns! Shape is ", s.shape
-
-  
