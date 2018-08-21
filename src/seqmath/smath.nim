@@ -745,7 +745,7 @@ proc histogram*[T](x: openArray[T],
                    bins: (int | string),
                    range: tuple[mn, mx: float] = (0.0, 0.0),
                    normed = false,
-                   weights: seq[T] = nil,
+                   weights: seq[T] = @[],
                    density = false): seq[int] =
   ## Compute the histogram of a set of data. Adapted from Numpy's code.
   result = @[]
