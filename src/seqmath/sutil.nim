@@ -116,8 +116,8 @@ proc shape*[T](x: seq[T]): seq[int] =
   ##    echo x.shape
   ##    -> @[2, 2, 3]
   result = @[]
+  result.add(len(x))
   if len(x) > 0:
-    result.add(len(x))
     result.add(shape(x[0]))
 
 template getIndexSeq(ind: int, shape: openArray[int]): seq[int] =
