@@ -686,26 +686,19 @@ proc interp*[T:float](v: T, p: openArray[Point], left, right: T): float =
         result =  p[i].y + (v - p[i].x) * dy / dx
         break
 
-proc bincount*(x: openArray[int], sorted = false): seq[int] =
+proc bincount*(x: openArray[int], minLength: int): seq[int] =
   ## Count of the number of occurrences of each value in
   ## sequence ``x`` of non-negative ints.
-  ## If `sorted` is true, we do not perform a sort of the input
-  ## sequence. Useful for input sequence is known to be sorted
-  ## already.
   ##
-  ## The result is an sequence of length ``max(x)-min(x)+1``
-  ## and covering every integer from ``min(x)`` to ``max(x)``
-  var ss: seq[int]
-  if not sorted:
-    ss = sort(x)
-  else:
-    ss = @x
-  let sslow = max(0, ss[ss.low])
-  result = newSeq[int](ss[ss.len-1] - sslow + 1)
-  # relies on newSeq clearing values to zero!!
-  for i in 0..<ss.len:
-    if ss[i] < 0: continue
-    inc(result[ss[i] - sslow])
+  ## The result is an sequence of length ``max(x)+1``
+  ## or ``minLength`` if it is larger than ``max(x)``.
+  ## Covering every integer from ``0`` to
+  ## ``max(max(x), minLength)``
+  doAssert min(x) >= 0, "Negative values are not allowed in bincount!"
+  let size = max(max(x) + 1, minLength)
+  result = newSeq[int](size)
+  for idx in x:
+    inc(result[idx])
 
 proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] =
   ## Return the indices of the ``bins`` to which each value of ``x`` belongs.
@@ -810,7 +803,7 @@ proc histogram*[T](x: openArray[T],
         indices[i] += 1
 
     # currently weights and min length not implemented for bincount
-    result = bincount(indices)
+    result = bincount(indices, minLength = bins)
 
 proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   ## calculates the likelihood of the value `val` given the hypothesis `hist`

@@ -21,7 +21,7 @@ when isMainModule:
 
   # tests for convenience procs
   doAssert( (@[1, 2, 3, 4] < @[0, 3, 5, 6]) == @[false, true, true, true])
-  doAssert( (@[1, 2, 3, 6] <= @[0, 1, 5, 6]) == @[false, false, true, true])  
+  doAssert( (@[1, 2, 3, 6] <= @[0, 1, 5, 6]) == @[false, false, true, true])
   doAssert( (@[1, 2, 3, 4] > @[0, 3, 5, 6]) == @[true, false, false, false])
   doAssert( (@[1, 2, 3, 4] >= @[0, 2, 5, 6]) == @[true, true, false, false])
   doAssert( arange(0, 5) == @[0, 1, 2, 3, 4] )
@@ -50,14 +50,14 @@ when isMainModule:
   doAssert( shape(reshape(newSeq[int](100), [5, 20])) == @[5, 20] )
   doAssert( shape(reshape3D(newSeq[int](1000), [5, 20, 10])) == @[5, 20, 10] )
   doAssert( shape(reshape(newSeq[int](1000), [5, 20, 10])) == @[5, 20, 10] )
-  
+
   doAssert( histogram(arange(0, 100, 1), bins = 10).len == 10 )
   doAssert( histogram(arange(0, 100, 1), bins = 11).len == 11 )
   doAssert( histogram(arange(0, 100, 1), bins = 10) == @[10, 10, 10, 10, 10, 10, 10, 10, 10, 10] )
   let xar = @[0, 1, 1, 1, 3, 5, 1, 3, 6, 8]
   doAssert( histogram(xar, bins = 6, range = (0.0, 5.0)) == @[1, 4, 0, 2, 0, 1] )
 
-  # TODO: add tests for likelihood, logLikelihood and gauss  
+  # TODO: add tests for likelihood, logLikelihood and gauss
 
   doAssert( cumProd([1,2,3,4]) == @[1,2,6,24])
   doAssert( cumSum([1,2,3,4]) == @[1,3,6,10])
@@ -101,7 +101,7 @@ when isMainModule:
   doAssert( percentile(@[10,7,4,3,2,1],100) == 10.0 )
   doAssert( percentile(@[10,7,4,3,2,1,0],50) == 3.0 )
   doAssert( percentile(@[10,7,4,3,2,1],50) == 3.5 )
-  doAssert( bincount(@[1,-1,0,1,3,2,0,2,3,2,1,5,-2,-3]) == @[2,3,3,2,0,1] )
+  # doAssert( bincount(@[1,-1,0,1,3,2,0,2,3,2,1,5,-2,-3]) == @[2,3,3,2,0,1] )
   doAssert( digitize(@[1.2, 10.0, 12.4, 15.5, 20.0], @[0.0,5.0,10.0,15.0,20.0], true) == @[1,2,3,4,4] )
   doAssert( digitize(@[1.2, 10.0, 12.4, 15.5, 20.0], @[0.0,5.0,10.0,15.0,20.0]) == @[1,3,3,4,5] )
   doAssert( digitize(@[1.2, 10.0, 12.4, 15.5, 20.0], @[20.0,15.0,10.0,5.0,0.0], true) == @[4,3,2,1,1] )
@@ -149,9 +149,3 @@ when isMainModule:
   doAssert( linspace(2.0, 3.0, num = 5, endpoint = false).len == 5)
   doAssert( round(linspace(2.0, 3.0, num = 5), places = 2) == @[2.00, 2.25, 2.5, 2.75, 3.00] )
   doAssert( round(linspace(2.0, 3.0, num = 5, endpoint = false), places = 2) == @[2.00, 2.20, 2.40, 2.60, 2.80] )
-
-  
-
-
-
-  
