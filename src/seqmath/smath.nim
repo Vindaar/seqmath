@@ -267,6 +267,18 @@ proc max*[T](x: openArray[T], m: T): seq[T] =
     for i in 0..<x.len:
       result[i] = max(m, x[i])
 
+proc argmax*[T](x: openArray[T]): int =
+  let m = max(x)
+  for i, el in x:
+    if el == m:
+      return i
+
+proc argmin*[T](x: openArray[T]): int =
+  let m = min(x)
+  for i, el in x:
+    if el == m:
+      return i
+
 proc max*[T](x, y: seq[T]): seq[T] =
   ## Note: previous definition using an openArray as the type
   ## does not work anymore, since it clashes with with
