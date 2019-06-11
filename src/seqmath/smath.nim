@@ -702,7 +702,7 @@ proc bincount*(x: openArray[int], minLength: int): seq[int] =
   ## Count of the number of occurrences of each value in
   ## sequence ``x`` of non-negative ints.
   ##
-  ## The result is an sequence of length ``max(x)+1``
+  ## The result is a sequence of length ``max(x)+1``
   ## or ``minLength`` if it is larger than ``max(x)``.
   ## Covering every integer from ``0`` to
   ## ``max(max(x), minLength)``
