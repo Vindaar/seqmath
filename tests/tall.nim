@@ -1,4 +1,4 @@
-import seqmath
+import seqmath, sequtils
 
 when isMainModule:
   doAssert(Point(x:2.0, y:2.0) != Point(x:2.0001, y:2.0) )
@@ -51,11 +51,20 @@ when isMainModule:
   doAssert( shape(reshape3D(newSeq[int](1000), [5, 20, 10])) == @[5, 20, 10] )
   doAssert( shape(reshape(newSeq[int](1000), [5, 20, 10])) == @[5, 20, 10] )
 
-  doAssert( histogram(arange(0, 100, 1), bins = 10).len == 10 )
-  doAssert( histogram(arange(0, 100, 1), bins = 11).len == 11 )
-  doAssert( histogram(arange(0, 100, 1), bins = 10) == @[10, 10, 10, 10, 10, 10, 10, 10, 10, 10] )
-  let xar = @[0, 1, 1, 1, 3, 5, 1, 3, 6, 8]
-  doAssert( histogram(xar, bins = 6, range = (0.0, 5.0)) == @[1, 4, 0, 2, 0, 1] )
+  # histogram
+  block:
+    doAssert( histogram(arange(0, 100, 1), bins = 10)[0].len == 10 )
+    doAssert( histogram(arange(0, 100, 1), bins = 11)[0].len == 11 )
+    doAssert( histogram(arange(0, 100, 1), bins = 10)[0] == @[10, 10, 10, 10, 10, 10, 10, 10, 10, 10] )
+    let xar = @[0, 1, 1, 1, 3, 5, 1, 3, 6, 8]
+    doAssert( histogram(xar, bins = 6, range = (0.0, 5.0))[0] == @[1, 4, 0, 2, 0, 1] )
+
+    let res = histogram([1, 2, 1], bins = @[0, 1, 2, 3])
+    doAssert res == (@[0, 2, 1], @[0'f64, 1, 2, 3])
+
+    let xar2 = [22,87,5,43,56,73,55,54,11,20,51,5,79,31,27]
+    let bins = @[0,20,40,60,80,100]
+    doAssert histogram(xar2, bins) == (@[3, 4, 5, 2, 1], @[0'f64, 20, 40, 60, 80, 100])
 
   # TODO: add tests for likelihood, logLikelihood and gauss
 

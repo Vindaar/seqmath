@@ -747,13 +747,21 @@ proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] 
           break
 
 proc histogram*[T](x: openArray[T],
-                   bins: (int | string),
+                   bins: (int | string | seq[T]),
                    range: tuple[mn, mx: float] = (0.0, 0.0),
                    normed = false,
                    weights: seq[T] = @[],
-                   density = false): seq[int] =
+                   density = false): (seq[int], seq[float]) =
   ## Compute the histogram of a set of data. Adapted from Numpy's code.
-  result = @[]
+  ## If `bins` is an integer, the required bin edges will be calculated in the
+  ## range `range`. If no `range` is given, the `(min, max)` of `x` will be taken.
+  ## If `bins` is a `seq[T]`, the bin edges are taken as is. Note however, that
+  ## the bin edges must include both the left most, as well as the right most
+  ## bin edge. Thus the length must be `numBins + 1` relative to the desired number
+  ## of bins of the resulting histogram!
+  ## Returns a tuple of
+  ## - histogram: seq[int] = the resulting histogram binned via
+  ## - bin_edges: seq[T] = the bin edges used to create the histogram
   if x.len == 0:
     raise newException(ValueError, "Cannot compute histogram of empty array!")
 
@@ -776,46 +784,49 @@ proc histogram*[T](x: openArray[T],
     # for the implementations it's only a few LoC
     raise newException(NotImplementedError, "Automatic choice of number of bins based on different " &
                        "algorithms not implemented yet.")
-  when type(bins) is int:
-    # init empty float histogram
-    var n = newSeq[float](bins)
-    # normalization
-    let
-      norm = bins.float / (mx - mn)
-      bin_edges = linspace(mn, mx, bins + 1, endpoint = true)
-    # make sure input array is float and filter to all elements inside valid range
-    # x_keep is used to calculate the indices whereas x_data is used for hist calc
-    when T isnot float:
-      var x_data = mapIt(@x, it.float)
+  elif type(bins) is seq[T]:
+    let bin_edges = bins.mapIt(it.float)
+    let numBins = bin_edges.len - 1
+  elif type(bins) is int:
+    let numBins = bins
+    let bin_edges = linspace(mn, mx, numBins + 1, endpoint = true)
+  # init empty float histogram
+  var n = newSeq[float](numBins)
+  # normalization
+  let norm = numBins.float / (mx - mn)
+  # make sure input array is float and filter to all elements inside valid range
+  # x_keep is used to calculate the indices whereas x_data is used for hist calc
+  when T isnot float:
+    var x_data = mapIt(@x, it.float)
+  else:
+    var x_data = @x
+  var x_keep = filterIt(x_data, it >= mn and it <= mx)
+  x_data = x_keep
+  # remove potential offset
+  applyIt(x_keep, it - mn)
+  #x_keep -= mn
+  applyIt(x_Keep, it * norm)
+  # x_keep *= norm
+
+  # compute bin indices
+  var indices = mapIt(x_keep, it.int)
+  # for indices which are equal to the max value, subtract 1
+  indices.apply do (it: int) -> int:
+    if it == numBins:
+      it - 1
     else:
-      var x_data = @x
-    var x_keep = filterIt(x_data, it >= mn and it <= mx)
-    x_data = x_keep
-    # remove potential offset
-    applyIt(x_keep, it - mn)
-    #x_keep -= mn
-    applyIt(x_Keep, it * norm)
-    # x_keep *= norm
+      it
+  # since index computation not guaranteed to give exactly consistent results within
+  # ~1 ULP of the bin edges, decrement some indices
+  let decrement = x_data < bin_edges[indices]
+  for i in 0 .. indices.high:
+    if decrement[i] == true:
+      indices[i] -= 1
+    if x_data[i] >= bin_edges[indices[i] + 1] and indices[i] != (numBins - 1):
+      indices[i] += 1
 
-    # compute bin indices
-    var indices = mapIt(x_keep, it.int)
-    # for indices which are equal to the max value, subtract 1
-    indices.apply do (it: int) -> int:
-      if it == bins:
-        it - 1
-      else:
-        it
-    # since index computation not guaranteed to give exactly consistent results within
-    # ~1 ULP of the bin edges, decrement some indices
-    let decrement = x_data < bin_edges[indices]
-    for i in 0 .. indices.high:
-      if decrement[i] == true:
-        indices[i] -= 1
-      if x_data[i] >= bin_edges[indices[i] + 1] and indices[i] != (bins - 1):
-        indices[i] += 1
-
-    # currently weights and min length not implemented for bincount
-    result = bincount(indices, minLength = bins)
+  # currently weights and min length not implemented for bincount
+  result = (bincount(indices, minLength = numBins), bin_edges)
 
 proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   ## calculates the likelihood of the value `val` given the hypothesis `hist`
