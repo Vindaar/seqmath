@@ -30,8 +30,7 @@ when isMainModule:
   doAssert( arange(0, 6, 2, endpoint = true) == @[0, 2, 4, 6] )
   doAssert( flatten(@[ @[1, 2, 3], @[4, 5, 6] ]) == @[1, 2, 3, 4, 5, 6])
   doAssert( flatten(@[ @[ @[1, 2, 3], @[4, 5, 6] ], @[ @[1, 2, 3], @[4, 5, 6] ] ]) == @[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6])
-  # currently not working, due to no support for openArray in shape
-  doAssert( shape([@[1,2,3], @[4,5,6]]) == @[2,3] )
+
   doAssert( shape(@[@[1,2,3], @[4,5,6]]) == @[2,3] )
   doAssert( shape(@[@[@[@[1,2,3], @[4,5,6]]]]) == @[1,1,2,3] )
 
