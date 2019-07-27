@@ -753,7 +753,9 @@ proc histogram*[T](x: openArray[T],
                    range: tuple[mn, mx: float] = (0.0, 0.0),
                    normed = false,
                    weights: seq[T] = @[],
-                   density = false): (seq[int], seq[float]) =
+                   density = false,
+                   upperRangeBinRight = true
+                  ): (seq[int], seq[float]) =
   ## Compute the histogram of a set of data. Adapted from Numpy's code.
   ## If `bins` is an integer, the required bin edges will be calculated in the
   ## range `range`. If no `range` is given, the `(min, max)` of `x` will be taken.
@@ -761,6 +763,11 @@ proc histogram*[T](x: openArray[T],
   ## the bin edges must include both the left most, as well as the right most
   ## bin edge. Thus the length must be `numBins + 1` relative to the desired number
   ## of bins of the resulting histogram!
+  ## The behavior of range can be set via `upperRangeBinRight`. It controls the
+  ## interpretation of the upper range. If it is `true` the upper range is considered
+  ## the right edge of the last bin. If `false` we understand it as the left bin edge
+  ## of the last bin. This of course only has an effect if `bins` is given as an
+  ## integer!
   ## Returns a tuple of
   ## - histogram: seq[int] = the resulting histogram binned via
   ## - bin_edges: seq[T] = the bin edges used to create the histogram
@@ -791,7 +798,12 @@ proc histogram*[T](x: openArray[T],
     let numBins = bin_edges.len - 1
   elif type(bins) is int:
     let numBins = bins
-    let bin_edges = linspace(mn, mx, numBins + 1, endpoint = true)
+    var bin_edges: seq[float]
+    if upperRangeBinRight:
+      bin_edges = linspace(mn, mx, numBins + 1, endpoint = true)
+    else:
+      let binWidth = (mx - mn) / (numBins.float - 1)
+      bin_edges = linspace(mn, mx + binWidth, numBins + 1, endpoint = true)
   # init empty float histogram
   var n = newSeq[float](numBins)
   # normalization
