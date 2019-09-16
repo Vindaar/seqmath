@@ -1,4 +1,4 @@
-import sequtils, strformat
+import sequtils, strformat, math
 
 type
   #
