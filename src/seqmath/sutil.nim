@@ -54,6 +54,10 @@ proc linspace*(start, stop: float, num: int, endpoint = true): seq[float] =
       # for every element calculate new value for next iteration
       step += diff
 
+proc logspace*(start, stop: float, num: int, base = 10.0): seq[float] =
+  ## generates evenly spaced points between start and stop in log space
+  let linear = linspace(start, stop, num)
+  result = linear.mapIt(pow(base, it))
 
 # ----------- convenience procs on seqs and open arrays -------------------
 
