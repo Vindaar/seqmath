@@ -842,6 +842,33 @@ proc histogram*[T](x: openArray[T],
   # currently weights and min length not implemented for bincount
   result = (bincount(indices, minLength = numBins), bin_edges)
 
+proc rebin*[T](bins: seq[T], by: int): seq[T] =
+  ## Given a set of `bins`, `rebin` combines each consecutive `by` bins
+  ## into a single bin, summing the bin contents. The resulting seq thus
+  ## has a length of `bins.lev div by`.
+  ## TODO: add tests for this!
+  result = newSeq[T](bins.len div by)
+  var tmp = T(0)
+  var j = 0
+  for i in 0 .. bins.high:
+    if i > 0 and i mod by == 0:
+      result[j] = tmp
+      tmp = T(0)
+      inc j
+    tmp += bins[i]
+
+proc fillHist*[T](bins: seq[T], data: seq[T]): seq[int] =
+  ## Given a set of `bins` (which are interpreted to correspond to the left
+  ## bin edge!) and a sequence of `data`, it will fill a histogram according
+  ## to the `bins`. That is for each element `d` of `data` the correct bin
+  ## `b` is checked and this bin is increased by `1`.
+  ## TODO: write tests for this!
+  result = newSeq[int](bins.len)
+  for d in data:
+    let idx = bins.lowerBound(d) - 1
+    result[idx] += 1
+
+
 proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   ## calculates the likelihood of the value `val` given the hypothesis `hist`
   ## assuming the histogram is binned using `bin_edges`
