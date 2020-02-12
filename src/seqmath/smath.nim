@@ -868,6 +868,17 @@ proc fillHist*[T](bins: seq[T], data: seq[T]): seq[int] =
     let idx = bins.lowerBound(d) - 1
     result[idx] += 1
 
+proc histMean*[T, U](hist: seq[T], bins: seq[U]): float =
+  ## returns the mean of the given histogram, taking into account the
+  ## bin edges `bins`. This is especially useful to compute the mean of
+  ## a histogram with unequal bin widths
+  ## NOTE: The `bins` are assumed to represent the left bin edges!
+  for i in 0 .. bins.high:
+    let binCenter = (bins[i + 1] + bins[i]).float / 2.0
+    let binWidth = (bins[i + 1] - bins[i]).float
+    let normBinVal = hist[i].float * binCenter
+    result += normBinVal
+  result = result / hist.sum.float
 
 proc likelihood*[T, U](hist: openArray[T], val: U, bin_edges: seq[U]): float =
   ## calculates the likelihood of the value `val` given the hypothesis `hist`
