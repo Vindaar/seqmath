@@ -801,7 +801,12 @@ proc histogram*[T](
   elif type(bins) is seq[T]:
     let bin_edges = bins.mapIt(it.float)
     let numBins = bin_edges.len - 1
+    # possibly truncate the input range (e.g. bin edges smaller range than data)
+    mn = min(bin_edges[0], mn)
+    mx = min(bin_edges[^1], mx)
   elif type(bins) is int:
+    if bins == 0:
+      raise newException(ValueError, "0 bins is not a valid number of bins!")
     let numBins = bins
     var bin_edges: seq[float]
     if upperRangeBinRight:
