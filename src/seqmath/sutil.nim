@@ -1,4 +1,4 @@
-import sequtils, strformat, math
+import sequtils, strformat, math, macros
 
 type
   #
@@ -18,6 +18,56 @@ type
 
 #  when canImport(arraymancer):
 #    import arraymancer
+
+proc traverseTree(input: NimNode): NimNode =
+  # iterate children
+  for i in 0 ..< input.len:
+    case input[i].kind
+    of nnkSym:
+      # if we found a symbol, take it
+      result = input[i]
+    of nnkBracketExpr:
+      # has more children, traverse
+      result = traverseTree(input[i])
+    else:
+      error("Unsupported type: " & $input.kind)
+
+macro getSubType*(TT: typed): untyped =
+  ## macro to get the subtype of a nested type by iterating
+  ## the AST
+  # traverse the AST
+  let res = traverseTree(TT.getTypeInst)
+  # assign symbol to result
+  result = quote do:
+    `res`
+
+macro zipEm*(seqs: varargs[typed]): untyped =
+  ## zips up all given `seqs` and returns a seq of `tuple[type(seqs[0]), ...]`
+  ## All given seqs must have the same length! Otherwise bad things can happen...
+  # get types
+  result = newStmtList()
+  var tupType = nnkPar.newTree()
+  var tupCreate = nnkPar.newTree()
+  let length = genSym(nskVar, "length")
+  let forIdx = genSym(nskForVar, "idx")
+  let res = genSym(nskVar, "res")
+  result.add quote do:
+    var `length`: int
+  for s in seqs:
+    tupType.add nnkCall.newTree(ident"getSubType", s)
+    tupCreate.add nnkCall.newTree(ident"[]", s, forIdx)
+    result.add quote do:
+      `length` = max(`s`.len, `length`)
+  result.add quote do:
+    var `res` = newSeq[`tupType`](`length`)
+  result.add quote do:
+    for `forIdx` in 0 ..< `length`:
+      `res`[`forIdx`] = `tupCreate`
+  result = quote do:
+    block:
+      `result`
+      `res`
+  echo result.repr
 
 proc arange*(start, stop, step = 1, endpoint = false): seq[int] =
   ## returns seq containing all elements from incl. `start` to excl. `stop`
