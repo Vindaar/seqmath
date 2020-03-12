@@ -72,6 +72,22 @@ suite "Histogram tests":
     let (hist, edges) = histogram(arr, bins=30, range = (-0.5, 5.0))
     check hist[^1] == 1
 
+  test "non uniform bin widths":
+    let data = [29.0, 29.0, 31.0, 30.0, 26.0, 26.0, 27.0, 26.0, 25.0, 28.0, 27.0, 25.0, 25.0, 25.0, 25.0, 24.0, 25.0, 23.0, 20.0, 15.0, 20.0, 17.0, 17.0, 26.0, 23.0, 26.0, 25.0, 24.0, 19.0, 14.0, 15.0, 17.0, 27.0, 30.0, 26.0, 29.0, 26.0, 24.0, 24.0, 22.0, 22.0, 24.0, 24.0, 17.0, 22.0, 21.0, 48.0, 23.0, 23.0, 19.0, 18.0, 17.0, 17.0, 19.0, 19.0, 12.0, 17.0, 15.0, 17.0, 17.0, 12.0, 17.0, 16.0, 18.0, 15.0, 16.0, 12.0, 17.0, 17.0, 16.0, 12.0, 15.0, 16.0, 17.0, 15.0, 17.0, 17.0, 18.0, 17.0, 19.0, 17.0, 41.0, 19.0, 19.0, 17.0, 17.0, 17.0, 16.0, 16.0, 17.0, 15.0, 17.0, 26.0, 25.0, 26.0, 24.0, 21.0, 22.0, 23.0, 22.0, 20.0, 33.0, 32.0, 32.0, 29.0, 32.0, 34.0, 36.0, 36.0, 29.0, 26.0, 27.0, 30.0, 31.0, 26.0, 26.0, 28.0, 26.0, 29.0, 28.0, 27.0, 24.0, 24.0, 24.0, 22.0, 19.0, 20.0, 17.0, 12.0, 19.0, 18.0, 14.0, 15.0, 18.0, 18.0, 15.0, 17.0, 16.0, 18.0, 43.0]
+    # default, last bin is right edge of last bin
+    let inputBins =  @[0'f64, 10, 15, 19, 23, 25, 40]
+    var (hist, bins) = histogram(data, bins = inputBins)
+    check hist == @[0, 7, 47, 21, 15, 47]
+    check bins == inputBins
+    # right edge is left bin of last bin (upper range open)
+    (hist, bins) = histogram(data, bins = @[0'f64, 10, 15, 19, 23, 25, 40],
+                             upperRangeBinRight = false)
+    check hist == @[0, 7, 47, 21, 15, 47, 3]
+    # internally one more bin edge is used, `Inf` is added, but not returned
+    # so this still holds
+    check bins.len == inputBins.len
+    check bins == inputBins
+
 ## The remanining tests are not ported because they mostly use functionality,
 ## which is still missing in the Nim version (namely bins as string to auto compute,
 ## normalization and density).

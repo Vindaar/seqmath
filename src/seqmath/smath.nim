@@ -748,6 +748,68 @@ proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] 
           result[i] = k
           break
 
+func areBinsUniform(bin_edges: seq[float]): bool =
+  ## simple check whether bins are uniform
+  if bin_edges.len in {0, 1, 2}: return true
+  else:
+    let binWidth = bin_edges[1] - bin_edges[0]
+    for i in 0 ..< bin_edges.high:
+      if abs((bin_edges[i+1] - bin_edges[i]) - binWidth) > 1e-8:
+        return false
+
+proc rebin*[T](bins: seq[T], by: int): seq[T] =
+  ## Given a set of `bins`, `rebin` combines each consecutive `by` bins
+  ## into a single bin, summing the bin contents. The resulting seq thus
+  ## has a length of `bins.lev div by`.
+  ## TODO: add tests for this!
+  result = newSeq[T](bins.len div by)
+  var tmp = T(0)
+  var j = 0
+  for i in 0 .. bins.high:
+    if i > 0 and i mod by == 0:
+      result[j] = tmp
+      tmp = T(0)
+      inc j
+    tmp += bins[i]
+
+proc fillHist*[T](bins: seq[T], data: seq[T],
+                  upperRangeBinRight = true): seq[int] =
+  ## Given a set of `bins` (which are interpreted to correspond to the left
+  ## bin edge!) and a sequence of `data`, it will fill a histogram according
+  ## to the `bins`. That is for each element `d` of `data` the correct bin
+  ## `b` is checked and this bin is increased by `1`.
+  ## If `upperRangeBinRight` is true, the last bin entry is considered the right
+  ## edge of the last bin. All values larger than it will be dropped. Otherwise
+  ## the last bin includes everything larger than bins[^1].
+  ## TODO: write tests for this!
+  var mbins = bins
+  if not upperRangeBinRight:
+    # add `inf` bin to `mbins` as upper range
+    mbins.add Inf
+  result = newSeq[int](mbins.len - 1)
+  let dataSorted = data.sorted
+  var
+    curIdx = 0
+    curBin = mbins[curIdx]
+    nextBin = mbins[curIdx + 1]
+    idx = 0
+    d: T
+  while idx < dataSorted.len:
+    d = dataSorted[idx]
+    if d >= curBin and d < nextBin:
+      inc result[curIdx]
+      inc idx
+    elif d < curBin:
+      # outside of range
+      inc idx
+    elif d >= nextBin:
+      inc curIdx
+      if curIdx + 1 == mbins.len: break
+      curBin = mbins[curIdx]
+      nextBin = mbins[curIdx + 1]
+    else:
+      doAssert false, "should never happen!"
+
 proc histogram*[T](
   x: openArray[T],
   bins: (int | string | seq[T]) = 10,
@@ -776,6 +838,7 @@ proc histogram*[T](
 
   if weights.len > 0 and weights.len != x.len:
     raise newException(ValueError, "The number of weights needs to be equal to the number of elements in the input seq!")
+  var uniformBins = true # are bins uniform?
 
   # parse the range parameter
   var (mn, mx) = range
@@ -804,6 +867,8 @@ proc histogram*[T](
     # possibly truncate the input range (e.g. bin edges smaller range than data)
     mn = min(bin_edges[0], mn)
     mx = min(bin_edges[^1], mx)
+    # check if bins really uniform
+    uniformBins = areBinsUniform(bin_edges)
   elif type(bins) is int:
     if bins == 0:
       raise newException(ValueError, "0 bins is not a valid number of bins!")
@@ -814,69 +879,49 @@ proc histogram*[T](
     else:
       let binWidth = (mx - mn) / (numBins.float - 1)
       bin_edges = linspace(mn, mx + binWidth, numBins + 1, endpoint = true)
-  # init empty float histogram
-  var n = newSeq[float](numBins)
-  # normalization
-  let norm = numBins.float / (mx - mn)
-  # make sure input array is float and filter to all elements inside valid range
-  # x_keep is used to calculate the indices whereas x_data is used for hist calc
+
   when T isnot float:
     var x_data = mapIt(@x, it.float)
   else:
     var x_data = @x
-  var x_keep = filterIt(x_data, it >= mn and it <= mx)
-  x_data = x_keep
-  # remove potential offset
-  applyIt(x_keep, it - mn)
-  #x_keep -= mn
-  applyIt(x_Keep, it * norm)
-  # x_keep *= norm
 
-  # compute bin indices
-  var indices = mapIt(x_keep, it.int)
-  # for indices which are equal to the max value, subtract 1
-  indices.apply do (it: int) -> int:
-    if it == numBins:
-      it - 1
-    else:
-      it
-  # since index computation not guaranteed to give exactly consistent results within
-  # ~1 ULP of the bin edges, decrement some indices
-  let decrement = x_data < bin_edges[indices]
-  for i in 0 .. indices.high:
-    if decrement[i] == true:
-      indices[i] -= 1
-    if x_data[i] >= bin_edges[indices[i] + 1] and indices[i] != (numBins - 1):
-      indices[i] += 1
 
-  # currently weights and min length not implemented for bincount
-  result = (bincount(indices, minLength = numBins), bin_edges)
+  if uniformBins:
+    # normalization
+    let norm = numBins.float / (mx - mn)
+    # make sure input array is float and filter to all elements inside valid range
+    # x_keep is used to calculate the indices whereas x_data is used for hist calc
+    var x_keep = filterIt(x_data, it >= mn and it <= mx)
+    x_data = x_keep
+    # remove potential offset
+    applyIt(x_keep, it - mn)
+    #x_keep -= mn
+    applyIt(x_keep, it * norm)
+    # x_keep *= norm
 
-proc rebin*[T](bins: seq[T], by: int): seq[T] =
-  ## Given a set of `bins`, `rebin` combines each consecutive `by` bins
-  ## into a single bin, summing the bin contents. The resulting seq thus
-  ## has a length of `bins.lev div by`.
-  ## TODO: add tests for this!
-  result = newSeq[T](bins.len div by)
-  var tmp = T(0)
-  var j = 0
-  for i in 0 .. bins.high:
-    if i > 0 and i mod by == 0:
-      result[j] = tmp
-      tmp = T(0)
-      inc j
-    tmp += bins[i]
-
-proc fillHist*[T](bins: seq[T], data: seq[T]): seq[int] =
-  ## Given a set of `bins` (which are interpreted to correspond to the left
-  ## bin edge!) and a sequence of `data`, it will fill a histogram according
-  ## to the `bins`. That is for each element `d` of `data` the correct bin
-  ## `b` is checked and this bin is increased by `1`.
-  ## TODO: write tests for this!
-  result = newSeq[int](bins.len)
-  for d in data:
-    let idx = bins.lowerBound(d) - 1
-    result[idx] += 1
+    # compute bin indices
+    var indices = mapIt(x_keep, it.int)
+    # for indices which are equal to the max value, subtract 1
+    indices.apply do (it: int) -> int:
+      if it == numBins:
+        it - 1
+      else:
+        it
+    # since index computation not guaranteed to give exactly consistent results within
+    # ~1 ULP of the bin edges, decrement some indices
+    let decrement = x_data < bin_edges[indices]
+    for i in 0 .. indices.high:
+      if decrement[i] == true:
+        indices[i] -= 1
+      if x_data[i] >= bin_edges[indices[i] + 1] and indices[i] != (numBins - 1):
+        indices[i] += 1
+    # currently weights and min length not implemented for bincount
+    result = (bincount(indices, minLength = numBins), bin_edges)
+  else:
+    # bins are not uniform
+    result = (fillHist(bin_edges, x_data,
+                       upperRangeBinRight = upperRangeBinRight),
+              bin_edges)
 
 proc histMean*[T, U](hist: seq[T], bins: seq[U]): float =
   ## returns the mean of the given histogram, taking into account the
