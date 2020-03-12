@@ -748,14 +748,14 @@ proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] 
           result[i] = k
           break
 
-proc histogram*[T](x: openArray[T],
-                   bins: (int | string | seq[T]),
-                   range: tuple[mn, mx: float] = (0.0, 0.0),
-                   normed = false,
-                   weights: seq[T] = @[],
-                   density = false,
-                   upperRangeBinRight = true
-                  ): (seq[int], seq[float]) =
+proc histogram*[T](
+  x: openArray[T],
+  bins: (int | string | seq[T]) = 10,
+  range: tuple[mn, mx: float] = (0.0, 0.0),
+  normed = false,
+  weights: seq[T] = @[],
+  density = false,
+  upperRangeBinRight = true): (seq[int], seq[float]) =
   ## Compute the histogram of a set of data. Adapted from Numpy's code.
   ## If `bins` is an integer, the required bin edges will be calculated in the
   ## range `range`. If no `range` is given, the `(min, max)` of `x` will be taken.
