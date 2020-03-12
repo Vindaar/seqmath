@@ -1,6 +1,6 @@
 # Package
 
-version     = "0.1.6"
+version     = "0.1.7"
 author      = "James Parkinson"
 description = "math for sequences and nested sequences"
 license     = "MIT"
