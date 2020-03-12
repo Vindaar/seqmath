@@ -779,6 +779,11 @@ proc histogram*[T](
 
   # parse the range parameter
   var (mn, mx) = range
+  if anyIt(@[mn, mx], classify(it) == fcNaN):
+    raise newException(ValueError, "One of the input ranges is NaN!")
+  elif anyIt(@[mn, mx], classify(it) in {fcInf, fcNegInf}):
+    raise newException(ValueError, "One of the input ranges is Inf!")
+
   if mn == 0.0 and mx == 0.0:
     mn = x.min.float
     mx = x.max.float
