@@ -928,9 +928,15 @@ proc histMean*[T, U](hist: seq[T], bins: seq[U]): float =
   ## bin edges `bins`. This is especially useful to compute the mean of
   ## a histogram with unequal bin widths
   ## NOTE: The `bins` are assumed to represent the left bin edges!
+  var
+    binCenter: float
+    binWidth: float
   for i in 0 .. bins.high:
-    let binCenter = (bins[i + 1] + bins[i]).float / 2.0
-    let binWidth = (bins[i + 1] - bins[i]).float
+    if i != bins.high:
+      binCenter = (bins[i + 1] + bins[i]).float / 2.0
+      binWidth = (bins[i + 1] - bins[i]).float
+    else:
+      binCenter = bins[i] + binWidth / 2.0
     let normBinVal = hist[i].float * binCenter
     result += normBinVal
   result = result / hist.sum.float
