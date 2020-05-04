@@ -423,7 +423,7 @@ proc eMod*[T](x, y: openArray[T]): seq[float] =
   result = newSeq[float](x.len)
   for i in 0..<x.len:
     if y[i] == 0: result[i] = 0.0
-    else: result[i] = mod(x[i].toFloat, y[i].toFloat)
+    else: result[i] = x[i].toFloat mod y[i].toFloat
 
 proc eMod*[T](x: openArray[T], y: T): seq[float] =
   ## ``modulus`` or ``remainder`` of ``x`` and ``y`` as a sequence,
@@ -436,7 +436,7 @@ proc eMod*[T](x: openArray[T], y: T): seq[float] =
   result = newSeq[float](x.len)
   for i in 0..<x.len:
     if y == 0: result[i] = 0.0
-    else: result[i] = mod(x[i].toFloat, y.toFloat)
+    else: result[i] = x[i].toFloat mod y.toFloat
 
 proc eRem*[T](x, y: openArray[T]): seq[float] =
   ## ``remainder`` - use eMod
@@ -985,7 +985,7 @@ proc unwrap*[T](p: openArray[T], discont = PI): seq[float] =
     if d != prevd:
       if d < PI and d > discont: continue
       # normalise back to range of -PI to PI
-      let m = mod(p[i], PI2)
+      let m = p[i] mod PI2
       if m > PI:
         result[i] = m - PI2
       else:
