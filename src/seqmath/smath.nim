@@ -714,6 +714,21 @@ proc bincount*(x: openArray[int], minLength: int): seq[int] =
   for idx in x:
     inc(result[idx])
 
+proc bincount*[T](x: openArray[int], minLength: int,
+                  weights: openArray[T]): seq[T] =
+  ## version of `bincount` taking into account weights. The resulting dtype is
+  ## the type of the given weights.
+  doAssert min(x) >= 0, "Negative values are not allowed in bincount!"
+  let size = max(max(x) + 1, minLength)
+  result = newSeq[T](size)
+  doAssert weights.len == x.len or weights.len == 0
+  if weights.len > 0:
+    for wIdx, rIdx in x:
+      result[rIdx] += weights[wIdx]
+  else:
+    for wIdx, rIdx in x:
+      result[rIdx] += 1
+
 proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] =
   ## Return the indices of the ``bins`` to which each value of ``x`` belongs.
   ##
