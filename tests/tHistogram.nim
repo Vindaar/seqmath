@@ -7,6 +7,15 @@ var rnd: Rand
 # The tests in this file are ported from the numpy.histogram tests here:
 # https://github.com/numpy/numpy/blob/v1.17.0/numpy/lib/tests/test_histograms.py
 
+suite "Bincount tests":
+  # requirement for histogram
+  test "Uniform bins with weights":
+    let w = @[0.3, 0.5, 0.2, 0.7, 1.0, -0.6]
+    let x = @[0, 1, 1, 2, 2, 2]
+    let res = bincount(x, minLength = 0, weights = w)
+    let exp = @[ 0.3,  0.7,  1.1]
+    check res == exp
+
 suite "Histogram tests":
   test "simple":
     let n = 100
@@ -39,6 +48,18 @@ suite "Histogram tests":
     # Upper outliers
     (h, b) = histogram(a, range = (1.0, 10.0))
     check h.sum == 9
+
+    # Normalization
+    var (hfloat, bfloat) = histogram(a, range = (1.0, 9.0), density = true)
+    check eMul(hfloat, eDiff(bfloat)).sum - 1 < 1e-10
+
+    # Weights
+    let w = arange(0, 10).mapIt(it.float + 0.5)
+    (hfloat, bfloat) = histogram(a, range = (1.0, 9.0), weights = w, density = true)
+    check eMul(hfloat, eDiff bfloat).sum - 1.0 < 1e-10
+
+    (hfloat, bfloat) = histogram(a, bins = 8, range = (1.0, 9.0), weights = w)
+    check hfloat == w[1 .. ^2]
 
   test "finite range":
     let vals = linspace(0.0, 1.0, 100)
@@ -92,17 +113,6 @@ suite "Histogram tests":
 ## which is still missing in the Nim version (namely bins as string to auto compute,
 ## normalization and density).
 
-#        # Normalization
-#        h, b = histogram(a, range=[1, 9], density=True)
-#        assert_almost_equal((h * np.diff(b)).sum(), 1, decimal=15)
-#
-#        # Weights
-#        w = np.arange(10) + .5
-#        h, b = histogram(a, range=[1, 9], weights=w, density=True)
-#        assert_equal((h * np.diff(b)).sum(), 1)
-#
-#        h, b = histogram(a, bins=8, range=[1, 9], weights=w)
-#        assert_equal(h, w[1:-1])
 #    def test_normed(self):
 #        sup = suppress_warnings()
 #        with sup:
