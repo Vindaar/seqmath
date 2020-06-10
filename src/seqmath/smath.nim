@@ -825,14 +825,15 @@ proc fillHist*[T](bins: seq[T], data: seq[T],
     else:
       doAssert false, "should never happen!"
 
-proc histogram*[T](
+proc histogramImpl*[T; U: float | int](
   x: openArray[T],
+  dtype: typedesc[U],
   bins: (int | string | seq[T]) = 10,
   range: tuple[mn, mx: float] = (0.0, 0.0),
   normed = false,
-  weights: seq[T] = @[],
-  density = false,
-  upperRangeBinRight = true): (seq[int], seq[float]) =
+  weights: openArray[dtype] = @[],
+  density: static bool = false,
+  upperRangeBinRight = true): (seq[dtype], seq[float]) =
   ## Compute the histogram of a set of data. Adapted from Numpy's code.
   ## If `bins` is an integer, the required bin edges will be calculated in the
   ## range `range`. If no `range` is given, the `(min, max)` of `x` will be taken.
@@ -846,7 +847,8 @@ proc histogram*[T](
   ## of the last bin. This of course only has an effect if `bins` is given as an
   ## integer!
   ## Returns a tuple of
-  ## - histogram: seq[int] = the resulting histogram binned via
+  ## - histogram: seq[dtype] = the resulting histogram binned via `bin_edges`. `dtype`
+  ##     is `int` for unweighted histograms and `float` for float weighted histograms
   ## - bin_edges: seq[T] = the bin edges used to create the histogram
   if x.len == 0:
     raise newException(ValueError, "Cannot compute histogram of empty array!")
@@ -897,22 +899,28 @@ proc histogram*[T](
 
   when T isnot float:
     var x_data = mapIt(@x, it.float)
+    # redefine locally as floats
+    var weights = weights.mapIt(it.float)
   else:
     var x_data = @x
-
+    # weights already float too, redefine mutable
+    var weights = @weights
 
   if uniformBins:
     # normalization
     let norm = numBins.float / (mx - mn)
     # make sure input array is float and filter to all elements inside valid range
     # x_keep is used to calculate the indices whereas x_data is used for hist calc
-    var x_keep = filterIt(x_data, it >= mn and it <= mx)
+    let idxData = toSeq(0 ..< x_data.len)
+    let idxKeep = idxData.filterIt(x_data[it] >= mn and x_data[it] <= mx)
+    var x_keep = idxKeep.mapIt(x_data[it])
     x_data = x_keep
+    # apply to weights if any
+    if weights.len > 0:
+      weights = idxKeep.mapIt(weights[it])
     # remove potential offset
-    applyIt(x_keep, it - mn)
-    #x_keep -= mn
-    applyIt(x_keep, it * norm)
-    # x_keep *= norm
+    for x in mitems(x_keep):
+      x = (x - mn) * norm
 
     # compute bin indices
     var indices = mapIt(x_keep, it.int)
@@ -931,12 +939,78 @@ proc histogram*[T](
       if x_data[i] >= bin_edges[indices[i] + 1] and indices[i] != (numBins - 1):
         indices[i] += 1
     # currently weights and min length not implemented for bincount
-    result = (bincount(indices, minLength = numBins), bin_edges)
+    when dtype is int:
+      result = (bincount(indices, minLength = numBins), bin_edges)
+    else:
+      result = (bincount(indices, minLength = numBins,
+                         weights = weights),
+                bin_edges)
   else:
     # bins are not uniform
-    result = (fillHist(bin_edges, x_data,
-                       upperRangeBinRight = upperRangeBinRight),
-              bin_edges)
+    doAssert weights.len == 0, "Weigths are currently unsupported for histograms with " &
+      "unequal bin widths!"
+    let hist = fillHist(bin_edges, x_data,
+                        upperRangeBinRight = upperRangeBinRight)
+    when dtype is float:
+      result = (hist.mapIt(it.float),
+                bin_edges)
+    else:
+      result = (hist,
+                bin_edges)
+  when dtype is float:
+    if density:
+      # normalize the result
+      let tot = result[0].sum
+      for i in 0 ..< bin_edges.high:
+        result[0][i] = result[0][i] / (bin_edges[i+1] - bin_edges[i]) / tot
+  else:
+    if density:
+      raise newException(ValueError, "Cannot satisfy `density == true` with a " &
+        "dtype of `int`!")
+
+proc histogram*[T](
+  x: openArray[T],
+  bins: (int | string | seq[T]) = 10,
+  range: tuple[mn, mx: float] = (0.0, 0.0),
+  normed = false,
+  density: static bool = false,
+  upperRangeBinRight = true): (seq[auto], seq[float]) =
+  ## blub
+  when density:
+    # when density is to be returned, result must be float
+    type dtype = float
+  else:
+    type dtype = int
+  result = histogramImpl(x = x,
+                         dtype = dtype,
+                         bins = bins,
+                         range = range,
+                         normed = normed,
+                         density = density,
+                         upperRangeBinRight = upperRangeBinRight)
+
+proc histogram*[T; U: float | int](
+  x: openArray[T],
+  weights: openArray[U],
+  bins: (int | string | seq[T]) = 10,
+  range: tuple[mn, mx: float] = (0.0, 0.0),
+  normed = false,
+  density: static bool = false,
+  upperRangeBinRight = true): (seq[U], seq[float]) =
+  ## blub, weighted histogram
+  when density:
+    type dtype = float
+  else:
+    type dtype = U
+  result = histogramImpl(x = x,
+                         dtype = dtype,
+                         bins = bins,
+                         range = range,
+                         normed = normed,
+                         weights = weights,
+                         density = density,
+                         upperRangeBinRight = upperRangeBinRight)
+
 
 proc histMean*[T, U](hist: seq[T], bins: seq[U]): float =
   ## returns the mean of the given histogram, taking into account the
