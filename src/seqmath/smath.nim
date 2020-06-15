@@ -830,7 +830,6 @@ proc histogramImpl*[T; U: float | int](
   dtype: typedesc[U],
   bins: (int | string | seq[T]) = 10,
   range: tuple[mn, mx: float] = (0.0, 0.0),
-  normed = false,
   weights: openArray[dtype] = @[],
   density: static bool = false,
   upperRangeBinRight = true): (seq[dtype], seq[float]) =
@@ -972,10 +971,18 @@ proc histogram*[T](
   x: openArray[T],
   bins: (int | string | seq[T]) = 10,
   range: tuple[mn, mx: float] = (0.0, 0.0),
-  normed = false,
   density: static bool = false,
   upperRangeBinRight = true): (seq[auto], seq[float]) =
-  ## blub
+  ## Computes the histogram of `x` given `bins` in the desired
+  ## `range`.
+  ## Right most bin edge by default is assumed to be right most
+  ## bin edge, can be changed via `upperRangeBinRight`. If weights
+  ## are desired, see the `histogram` overload below. For a more
+  ## detailed docstring see `histogramImpl`.
+  ##
+  ## `density` is a static argument, because we a density normalized
+  ## histogram returns float values, whereas a normal histogram is
+  ## a sequence of ints.
   when density:
     # when density is to be returned, result must be float
     type dtype = float
@@ -985,7 +992,6 @@ proc histogram*[T](
                          dtype = dtype,
                          bins = bins,
                          range = range,
-                         normed = normed,
                          density = density,
                          upperRangeBinRight = upperRangeBinRight)
 
@@ -994,10 +1000,18 @@ proc histogram*[T; U: float | int](
   weights: openArray[U],
   bins: (int | string | seq[T]) = 10,
   range: tuple[mn, mx: float] = (0.0, 0.0),
-  normed = false,
   density: static bool = false,
   upperRangeBinRight = true): (seq[U], seq[float]) =
-  ## blub, weighted histogram
+  ## Computes the histogram of `x` given `bins` in the desired
+  ## `range`.
+  ## Right most bin edge by default is assumed to be right most
+  ## bin edge, can be changed via `upperRangeBinRight`. If weights
+  ## are not desired, see the `histogram` overload above. For a more
+  ## detailed docstring see `histogramImpl`.
+  ##
+  ## `density` is a static argument, because we a density normalized
+  ## histogram returns float values, whereas a normal histogram is
+  ## a sequence of ints.
   when density:
     type dtype = float
   else:
@@ -1006,7 +1020,6 @@ proc histogram*[T; U: float | int](
                          dtype = dtype,
                          bins = bins,
                          range = range,
-                         normed = normed,
                          weights = weights,
                          density = density,
                          upperRangeBinRight = upperRangeBinRight)
