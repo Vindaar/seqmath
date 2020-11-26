@@ -1,2 +1,4 @@
+* v0.1.12
+- make =flatten=, =shape= work for seqs not only of =SomeNumber= types
 * v0.1.11
 - make =weights= and =density= arguments work for =histogram=

@@ -136,7 +136,7 @@ proc transpose*[T](x: openArray[seq[T]]): seq[seq[T]] =
     for j in 0..<alen:
       result[i][j] = x[j][i]
 
-proc flatten*[T: SomeNumber](a: seq[T]): seq[T] = a
+proc flatten*[T: not seq](a: seq[T]): seq[T] = a
   ## Exists so that recursive proc stops with this proc.
 proc flatten*[T: seq](a: seq[T]): auto =
   ## Note: only works due to usage of `auto` as return value, as
@@ -155,7 +155,7 @@ proc flatten*[T: seq](a: seq[T]): auto =
   a.concat.flatten
 
 
-proc shape*[T: (SomeNumber | bool | char | string)](x: T): seq[int] = @[]
+proc shape*[T: not seq](x: T): seq[int] = @[]
   ## Exists so that recursive proc stops with this proc.
 
 proc shape*[T](x: seq[T]): seq[int] =
