@@ -1,3 +1,7 @@
+* v0.1.13
+- fix return type of unweighted =histogram= to specify based on a
+  =dtype= argument. By default this is =int= (as we accumulate
+  counts). 
 * v0.1.12
 - make =flatten=, =shape= work for seqs not only of =SomeNumber= types
 * v0.1.11
