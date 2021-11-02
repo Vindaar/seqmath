@@ -972,7 +972,8 @@ proc histogram*[T](
   bins: (int | string | seq[T]) = 10,
   range: tuple[mn, mx: float] = (0.0, 0.0),
   density: static bool = false,
-  upperRangeBinRight = true): (seq[auto], seq[float]) =
+  upperRangeBinRight = true,
+  dtype: typedesc = int): (seq[dtype], seq[float]) =
   ## Computes the histogram of `x` given `bins` in the desired
   ## `range`.
   ## Right most bin edge by default is assumed to be right most
