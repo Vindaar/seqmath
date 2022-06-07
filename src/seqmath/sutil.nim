@@ -152,7 +152,6 @@ proc flatten*[T: seq](a: seq[T]): auto =
   ##   -> @[1, 2, 3, 4, 5, 6]
   a.concat.flatten
 
-
 proc shape*[T: not seq](x: T): seq[int] = @[]
   ## Exists so that recursive proc stops with this proc.
 
