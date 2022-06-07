@@ -1025,7 +1025,6 @@ proc histogram*[T; U: float | int](
                          density = density,
                          upperRangeBinRight = upperRangeBinRight)
 
-
 proc histMean*[T, U](hist: seq[T], bins: seq[U]): float =
   ## returns the mean of the given histogram, taking into account the
   ## bin edges `bins`. This is especially useful to compute the mean of

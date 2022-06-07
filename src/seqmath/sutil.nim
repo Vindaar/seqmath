@@ -87,7 +87,7 @@ proc linspace*(start, stop: float, num: int, endpoint = true): seq[float] =
   ## returns a seq containing a linear spacing starting from `start` to `stop`
   ## eitther including (endpoint == true) or excluding (endpoint == false) `stop`
   ## with a number of `num` elements
-  result = @[]
+  result = newSeq[float](num)
   var
     step = start
     diff: float
@@ -99,10 +99,8 @@ proc linspace*(start, stop: float, num: int, endpoint = true): seq[float] =
     # in case start is bigger than stop, return an empty sequence
     return @[]
   else:
-    for i in 0..<num:
-      result.add(step)
-      # for every element calculate new value for next iteration
-      step += diff
+    for i in 0 ..< num:
+      result[i] = start + i.float * diff
 
 proc logspace*(start, stop: float, num: int, base = 10.0): seq[float] =
   ## generates evenly spaced points between start and stop in log space
