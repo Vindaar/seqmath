@@ -1,3 +1,6 @@
+* v0.1.15
+- check for ranges determined from data in =histogram= for valididy
+  (no =NaN= or =(+-)Inf= allowed)
 * v0.1.14
 - fix naive implementation of =linspace= to avoid accumulating errors, sigh
 * v0.1.13

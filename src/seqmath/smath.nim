@@ -858,14 +858,14 @@ proc histogramImpl*[T; U: float | int](
 
   # parse the range parameter
   var (mn, mx) = range
-  if anyIt(@[mn, mx], classify(it) == fcNaN):
-    raise newException(ValueError, "One of the input ranges is NaN!")
-  elif anyIt(@[mn, mx], classify(it) in {fcInf, fcNegInf}):
-    raise newException(ValueError, "One of the input ranges is Inf!")
-
-  if mn == 0.0 and mx == 0.0:
+  if mn == 0.0 and mx == 0.0: # if none given, compute from data
     mn = x.min.float
     mx = x.max.float
+  if anyIt(@[mn, mx], classify(it) == fcNaN):
+    raise newException(ValueError, "One of the input or data ranges is NaN!")
+  elif anyIt(@[mn, mx], classify(it) in {fcInf, fcNegInf}):
+    raise newException(ValueError, "One of the input or data ranges is (+-)Inf!")
+
   if mn > mx:
     raise newException(ValueError, "Max range must be larger than min range!")
   elif mn == mx:
