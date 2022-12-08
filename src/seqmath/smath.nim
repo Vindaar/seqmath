@@ -765,7 +765,7 @@ proc digitize*[T](x: openArray[T], bins: openArray[T], right = false): seq[int] 
 
 func areBinsUniform(bin_edges: seq[float]): bool =
   ## simple check whether bins are uniform
-  if bin_edges.len in {0, 1, 2}: return true
+  if bin_edges.len in 0 .. 2: return true
   else:
     let binWidth = bin_edges[1] - bin_edges[0]
     for i in 0 ..< bin_edges.high:
