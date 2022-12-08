@@ -1,3 +1,5 @@
+* v0.1.16
+- do not use ~contains~ mixing ~int~ and ~set[int16]~
 * v0.1.15
 - check for ranges determined from data in =histogram= for valididy
   (no =NaN= or =(+-)Inf= allowed)
