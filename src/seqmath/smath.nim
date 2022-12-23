@@ -596,10 +596,24 @@ proc percentile*[T](x: openArray[T], p: int, interp = PtileInterp.linear): float
       else:  # PtileInterp.linear
         result = (a[i].float + (a[i+1] - a[i]).float * frac)
 
-proc median*[T](x: openArray[T], q: int, interp = "linear"): float =
+proc median*[T](x: openArray[T], q: int): float =
   ## median is the middle value of sorted ``x`` if ``x.len`` is odd,
   ## and is the average of the middle two elements if ``x.len`` is even
   result = percentile(x, 50)
+
+proc truncMean*[T](x: openArray[T], q: float): float =
+  ## Computes the truncated mean of `x` by removing the quantiles `q` on *both*
+  ## ends of the data. `q` should be given as a fraction of events to remove on both ends.
+  ## E.g. `q = 0.05` removes anything below the 5-th percentile and above the 95-th.
+  let qlow = percentile(x, (q * 100.0).round.int)
+  let qhigh = percentile(x, ((1.0 - q) * 100.0).round.int)
+  var count = 0
+  for el in x:
+    if el < T(qlow): continue
+    elif el > T(qhigh): continue
+    result += el
+    inc count
+  result = result / count.float
 
 proc interpRatio*[T:float](v, a, b: T): float {.inline.} =
   ## The ratio of ``v`` along the linear line ``a``<->``b``
