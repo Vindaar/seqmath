@@ -605,8 +605,9 @@ proc truncMean*[T](x: openArray[T], q: float): float =
   ## Computes the truncated mean of `x` by removing the quantiles `q` on *both*
   ## ends of the data. `q` should be given as a fraction of events to remove on both ends.
   ## E.g. `q = 0.05` removes anything below the 5-th percentile and above the 95-th.
-  let qlow = percentile(x, (q * 100.0).round.int)
-  let qhigh = percentile(x, ((1.0 - q) * 100.0).round.int)
+  let xSorted = x.sorted
+  let qlow = percentile(xSorted, (q * 100.0).round.int, isSorted = true)
+  let qhigh = percentile(xSorted, ((1.0 - q) * 100.0).round.int, isSorted = true)
   var count = 0
   for el in x:
     if el < T(qlow): continue
