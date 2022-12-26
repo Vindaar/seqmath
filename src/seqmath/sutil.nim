@@ -134,9 +134,9 @@ proc transpose*[T](x: openArray[seq[T]]): seq[seq[T]] =
     for j in 0..<alen:
       result[i][j] = x[j][i]
 
-proc flatten*[T: not seq](a: seq[T]): seq[T] = a
+template flatten*[T: not (seq|openArray)](a: openArray[T]): untyped = a
   ## Exists so that recursive proc stops with this proc.
-proc flatten*[T: seq](a: seq[T]): auto =
+proc flatten*[T: seq|openArray](a: openArray[T]): auto =
   ## Note: only works due to usage of `auto` as return value, as
   ## noted by Araq here:
   ## https://github.com/nim-lang/Nim/pull/6807
