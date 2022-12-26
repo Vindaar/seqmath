@@ -152,10 +152,10 @@ proc flatten*[T: seq|openArray](a: openArray[T]): auto =
   ##   -> @[1, 2, 3, 4, 5, 6]
   a.concat.flatten
 
-proc shape*[T: not seq](x: T): seq[int] = @[]
+proc shape*[T: not (seq|openArray)](x: T): seq[int] = @[]
   ## Exists so that recursive proc stops with this proc.
 
-proc shape*[T](x: seq[T]): seq[int] =
+proc shape*[T](x: openArray[T]): seq[int] =
   ## recursively determine the dimension of a nested sequence.
   ## we simply append the dimension of the current seq to the
   ## result and call this function again recursively until
