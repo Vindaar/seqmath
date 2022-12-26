@@ -1,5 +1,6 @@
 * v0.1.17
 - make ~flatten~ and ~shape~ work on ~openArray~
+- implement ~truncMean~ to calculate truncated means    
 * v0.1.16
 - do not use ~contains~ mixing ~int~ and ~set[int16]~
 * v0.1.15
