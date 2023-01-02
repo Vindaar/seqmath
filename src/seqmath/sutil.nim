@@ -41,6 +41,16 @@ macro getSubType*(TT: typed): untyped =
   result = quote do:
     `res`
 
+proc asType*[T; U](x: openArray[T], _: typedesc[U]): seq[U] =
+  ## Convert the given open array to a sequence of desired target type.
+  ## The conversion is done via `U(element)`, which means such a conversion
+  ## from the input `T` to target `U` must be supported!
+  when T is U: result = x
+  else:
+    result = newSeq[U](x.len)
+    for i in 0 ..< x.len:
+      result[i] = U(x[i])
+
 macro zipEm*(seqs: varargs[typed]): untyped =
   ## zips up all given `seqs` and returns a seq of `tuple[type(seqs[0]), ...]`
   ## All given seqs must have the same length! Otherwise bad things can happen...
