@@ -1,3 +1,7 @@
+* v0.1.18
+- add ~asType~ to convert an ~openArray~ of some type to target type
+- add ~isSorted~ argument to ~percentile~ to avoid sorting if input is
+  already sorted.  
 * v0.1.17
 - make ~flatten~ and ~shape~ work on ~openArray~
 - implement ~truncMean~ to calculate truncated means    
