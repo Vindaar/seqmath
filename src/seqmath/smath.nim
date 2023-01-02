@@ -557,7 +557,8 @@ proc sort[T](x: openarray[T]): seq[T] =
     result[i] = x[i]
   sort(result, cmp[T])
 
-proc percentile*[T](x: openArray[T], p: int, interp = PtileInterp.linear): float =
+proc percentile*[T](x: openArray[T], p: int, interp = PtileInterp.linear,
+                    isSorted = false): float =
   ## statistical percentile value of ``x``, where ``p`` percentile value
   ## is between ``0`` and ``100`` inclusively,
   ## and ``p=0`` gives the min value, ``p=100`` gives the max value
@@ -574,12 +575,15 @@ proc percentile*[T](x: openArray[T], p: int, interp = PtileInterp.linear): float
   ## - ``midpoint`` => (i+j)/2
   ##
   ## ``x`` does not need to be sorted, because ``percentile`` sorts
-  ## a copy of the data itself
+  ## a copy of the data itself. However, `isSorted` can be used to
+  ## indicate the input _is_ sorted to avoid the sorting.
   if x.len == 0: result = 0.0
   elif p <= 0: result = min(x).float
   elif p >= 100: result = max(x).float
   else:
-    var a = sort(x)
+    var a = @x
+    if not isSorted:
+      a.sort()
     let f: float =  (x.len-1) * p / 100
     let i: int = floor(f).int
     let frac: float = f - i.float
