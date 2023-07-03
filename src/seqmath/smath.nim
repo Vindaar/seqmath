@@ -1214,7 +1214,7 @@ proc bezier*(p: openArray[Point], n: int): seq[Point] =
 # scalar additional functions (some mainly used for tests) are also lifted below
 # if possible
 
-proc gauss*[T](x, mean, sigma: T , norm = false): float =
+proc gauss*[T](x, mean, sigma: T, norm = false): float =
   ## based on the ROOT implementation of TMath::Gaus:
   ## https://root.cern.ch/root/html524/src/TMath.cxx.html#dKZ4iB
   ## inputs are converted to float
