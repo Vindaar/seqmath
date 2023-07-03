@@ -101,7 +101,7 @@ proc linspace*(start, stop: float, num: int, endpoint = true): seq[float] =
   var
     step = start
     diff: float
-  if endpoint == true:
+  if endpoint:
     diff = (stop - start) / float(num - 1)
   else:
     diff = (stop - start) / float(num)
@@ -109,8 +109,11 @@ proc linspace*(start, stop: float, num: int, endpoint = true): seq[float] =
     # in case start is bigger than stop, return an empty sequence
     return @[]
   else:
-    for i in 0 ..< num:
+    let numMax = if endpoint: num - 1 else: num
+    for i in 0 ..< numMax:
       result[i] = start + i.float * diff
+    if endpoint:
+      result[^1] = stop
 
 proc logspace*(start, stop: float, num: int, base = 10.0): seq[float] =
   ## generates evenly spaced points between start and stop in log space
