@@ -600,7 +600,7 @@ proc percentile*[T](x: openArray[T], p: int, interp = PtileInterp.linear,
       else:  # PtileInterp.linear
         result = (a[i].float + (a[i+1] - a[i]).float * frac)
 
-proc median*[T](x: openArray[T], q: int): float =
+proc median*[T](x: openArray[T]): float =
   ## median is the middle value of sorted ``x`` if ``x.len`` is odd,
   ## and is the average of the middle two elements if ``x.len`` is even
   result = percentile(x, 50)
