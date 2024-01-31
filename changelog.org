@@ -1,3 +1,5 @@
+* v0.2.0
+- ~median~ does not require an argument any longer
 * v0.1.19
 - fix logic for ~endpoint~ in ~linspace~
 * v0.1.18
