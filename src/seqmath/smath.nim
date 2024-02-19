@@ -149,7 +149,9 @@ liftScalarProc(tan)
 liftScalarProc(tanh)
 #liftScalarProc2(pow)
 liftScalarProc(erf)
-liftScalarProc(erfc)
+when not defined(js):
+  liftScalarProc(erfc)
+
 liftScalarProc(lgamma)
 liftScalarProc(tgamma)
 liftScalarProc(trunc)
@@ -1234,26 +1236,27 @@ proc gauss*[T](x: openArray[T], mean, sigma: T, norm = false): seq[float] =
   for i in 0 .. x.high:
     result[i] = gauss(x[i], mean, sigma, norm)
 
-proc normalCdf*(x, sigma, x0: float): float =
-  let z = (x - x0) / (sigma * sqrt(2.0))
-  if z < -1.0:
-    result = 0.5 * erfc(-z)
-  else:
-    result = 0.5 * (1.0 * erf(z))
+when not defined(js):
+  proc normalCdf*(x, sigma, x0: float): float =
+    let z = (x - x0) / (sigma * sqrt(2.0))
+    if z < -1.0:
+      result = 0.5 * erfc(-z)
+    else:
+      result = 0.5 * (1.0 * erf(z))
 
-proc normalCdfC*(x, sigma, x0: float): float =
-  let z = (x - x0) / (sigma * sqrt(2.0))
-  if z > 1.0:
-    result = 0.5 * erfc(z)
-  else:
-    result = 0.5 * (1.0 - erf(z))
+  proc normalCdfC*(x, sigma, x0: float): float =
+    let z = (x - x0) / (sigma * sqrt(2.0))
+    if z > 1.0:
+      result = 0.5 * erfc(z)
+    else:
+      result = 0.5 * (1.0 - erf(z))
 
-proc normalCdf*[T](x: openArray[T], sigma, x0: float): seq[float] =
-  result = newSeq[float](x.len)
-  for i in 0 .. x.high:
-    result[i] = normalCdf(x[i], sigma, x0)
+  proc normalCdf*[T](x: openArray[T], sigma, x0: float): seq[float] =
+    result = newSeq[float](x.len)
+    for i in 0 .. x.high:
+      result[i] = normalCdf(x[i], sigma, x0)
 
-proc normalCdfC*[T](x: openArray[T], sigma, x0: float): seq[float] =
-  result = newSeq[float](x.len)
-  for i in 0 .. x.high:
-    result[i] = normalCdfC(x[i], sigma, x0)
+  proc normalCdfC*[T](x: openArray[T], sigma, x0: float): seq[float] =
+    result = newSeq[float](x.len)
+    for i in 0 .. x.high:
+      result[i] = normalCdfC(x[i], sigma, x0)
