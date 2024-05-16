@@ -1,3 +1,5 @@
+* v0.2.2
+- update signature of ~shape~ proc
 * v0.2.1
 - do not define ~erfc~ and related functions on JS
 * v0.2.0
